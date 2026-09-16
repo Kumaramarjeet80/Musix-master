@@ -1,0 +1,77 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+}
+
+android {
+    namespace = "green.mobileapps.musiplayeroffline"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "green.mobileapps.musiplayeroffline"
+        minSdk = 24
+        targetSdk = 36
+        versionCode = 18
+        versionName = "1.4.1"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+    viewBinding {
+        enable = true
+    }
+}
+
+dependencies {
+    // base
+    implementation(libs.androidx.core.ktx.v1120)
+    implementation(libs.androidx.appcompat.v161)
+
+    // ui
+    implementation(libs.glide)
+    implementation(libs.swiperefreshlayout)
+    annotationProcessor(libs.compiler)
+    implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.material.v1110)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.recyclerview)
+
+    // activity ktx for permission request contract
+    implementation(libs.androidx.activity.ktx)
+
+    // coroutines for background threading
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+
+    // media3 support
+    implementation(libs.media)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.common)
+    implementation(libs.androidx.media3.common.ktx)
+    implementation(libs.androidx.media3.session)
+    implementation(libs.library)
+    implementation(libs.media3.ui)
+
+}
