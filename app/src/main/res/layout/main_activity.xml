@@ -1,200 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
-    android:fitsSystemWindows="true"
-    tools:context=".MainActivity">
+    android:background="#0a0d14">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar_search"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/shadowInvisible"
-        android:elevation="4dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:menu="@menu/main"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
-
-        <!-- Using ConstraintLayout inside Toolbar to align the search view and buttons -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <!-- Back button for Edit Mode (Initially Hidden) -->
-            <ImageButton
-                android:id="@+id/button_back_edit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:contentDescription="Exit Edit Mode"
-                android:padding="8dp"
-                android:src="@drawable/arrow_back_24px"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:tint="@android:color/white"
-                android:visibility="gone"
-                android:clickable="true"
-                android:focusable="true"/>
-
-            <!-- NEW: Title for Edit Mode (Initially Hidden) -->
-            <TextView
-                android:id="@+id/text_edit_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Edit Track Metadata"
-                android:textColor="@android:color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:visibility="gone"
-                app:layout_constraintStart_toEndOf="@id/button_back_edit"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"/>
-
-            <androidx.appcompat.widget.SearchView
-                android:id="@+id/search_view_music"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:iconifiedByDefault="false"
-                app:queryHint="Search music…"
-                android:theme="@style/ThemeOverlay.AppCompat.Dark"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/button_sort"
-                app:layout_goneMarginEnd="8dp" />
-
-            <ImageButton
-                android:id="@+id/button_sort"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:contentDescription="Sort By Criterion"
-                android:padding="8dp"
-                android:src="@drawable/sort_24px"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/button_sort_direction"
-                app:tint="@android:color/white"
-                android:clickable="true"
-                android:focusable="true"/>
-
-            <ImageButton
-                android:id="@+id/button_sort_direction"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Toggle Sort Direction"
-                android:padding="8dp"
-                android:src="@drawable/descending_24px"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:tint="@android:color/white"
-                android:clickable="true"
-                android:focusable="true"/>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </com.google.android.material.appbar.MaterialToolbar>
-
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_refresh_layout"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/toolbar_search"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view_music"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="8dp"
-            android:clipToPadding="false"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_music_file"
-            />
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:id="@+id/text_status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/msg_scanning_files"
-                android:textColor="@color/gmaGreenDarkMono"
-                android:textSize="18sp"
-                android:visibility="gone"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:drawableTopCompat="@drawable/music_note_24px"
-                android:drawablePadding="16dp"/>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/queue_bar_root"
+    <!-- Top Action Bar Header -->
+    <RelativeLayout
+        android:id="@+id/layout_main_header"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardBackgroundColor="@color/gmaGreenDarkMono"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="8dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:visibility="visible">
+        android:layout_height="56dp"
+        android:layout_alignParentTop="true"
+        android:background="#151b26"
+        android:paddingHorizontal="16dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/text_app_title"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="12dp">
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:text="@string/app_name"
+            android:textColor="#ffffff"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-            <ImageView
-                android:id="@+id/icon_queue"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/queue_music_24px"
-                app:tint="@android:color/white"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+        <ImageButton
+            android:id="@+id/btn_main_menu"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Settings"
+            android:src="@drawable/settings_24px"
+            app:tint="#8b949e" />
+    </RelativeLayout>
 
-            <TextView
-                android:id="@+id/text_up_next_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="Up Next: Song Title"
-                android:textColor="@android:color/white"
-                android:textStyle="bold"
-                android:ellipsize="end"
-                android:singleLine="true"
-                app:layout_constraintStart_toEndOf="@id/icon_queue"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+    <!-- Track List RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_songs"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/layout_main_header"
+        android:clipToPadding="false"
+        android:paddingVertical="8dp"
+        android:scrollbars="vertical" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
+    <!-- Empty State View -->
+    <TextView
+        android:id="@+id/text_empty_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text="No offline songs found on device\nGrant storage permission to load tracks"
+        android:textColor="#8b949e"
+        android:textSize="14sp"
+        android:visibility="gone" />
 
-    <include
-        layout="@layout/item_music_file"
-        android:visibility="gone"/>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

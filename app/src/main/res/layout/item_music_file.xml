@@ -1,111 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/item_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
-    android:clickable="true"
-    android:focusable="true">
+    android:background="?attr/selectableItemBackground"
+    android:paddingHorizontal="14dp"
+    android:paddingVertical="10dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/item_root_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp">
+    <!-- Album Art / Track Icon -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_track_art"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        app:cardBackgroundColor="#151b26"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp">
 
         <ImageView
-            android:id="@+id/image_album_art"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/default_album_art_144px"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:contentDescription="@string/cd_album_art"
-            android:scaleType="centerCrop" />
+            android:id="@+id/image_track_art"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Track Artwork"
+            android:scaleType="centerCrop"
+            android:src="@drawable/default_album_art_144px" />
+    </androidx.cardview.widget.CardView>
 
-        <!-- Display Mode: TextViews (Default) -->
-        <TextView
-            android:id="@+id/text_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
-            android:textSize="12sp"
-            android:textColor="@color/titleColor"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/image_album_art"
-            app:layout_constraintEnd_toStartOf="@id/button_save_edit"
-            tools:text="Song Title Here (feat. Artist)" />
+    <!-- Track Information (Title & Artist/Duration) -->
+    <LinearLayout
+        android:id="@+id/layout_track_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginHorizontal="12dp"
+        android:layout_toStartOf="@id/btn_track_menu"
+        android:layout_toEndOf="@id/card_track_art"
+        android:orientation="vertical">
 
         <TextView
-            android:id="@+id/text_artist"
-            android:layout_width="0dp"
+            android:id="@+id/text_track_title"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceBodySmall"
-            android:textSize="11sp"
-            android:textColor="@color/subtitleColor"
-            app:layout_constraintTop_toBottomOf="@id/text_title"
-            app:layout_constraintStart_toStartOf="@id/text_title"
-            app:layout_constraintEnd_toStartOf="@id/button_save_edit"
-            tools:text="Artist Name"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Track Title"
+            android:textColor="#ffffff"
+            android:textSize="15sp"
+            android:textStyle="bold" />
 
-        <!-- Edit Mode: EditTexts (Initially GONE) -->
-        <EditText
-            android:id="@+id/edit_text_title"
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/text_track_subtitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:singleLine="true"
-            android:imeOptions="actionNext"
-            android:inputType="textCapWords"
-            android:textSize="12sp"
-            android:textColor="@color/titleColor"
-            android:visibility="gone"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/image_album_art"
-            app:layout_constraintEnd_toStartOf="@id/button_save_edit"
-            tools:text="Song Title Here (feat. Artist)"
-            tools:visibility="visible"/>
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Artist • 0:00"
+            android:textColor="#8b949e"
+            android:textSize="12sp" />
+    </LinearLayout>
 
-        <EditText
-            android:id="@+id/edit_text_artist"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:imeOptions="actionDone"
-            android:inputType="textCapWords"
-            android:textSize="11sp"
-            android:textColor="@color/subtitleColor"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/edit_text_title"
-            app:layout_constraintStart_toStartOf="@id/edit_text_title"
-            app:layout_constraintEnd_toStartOf="@id/button_save_edit"
-            tools:text="Artist Name"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:visibility="visible"/>
+    <!-- Context Menu Trigger Button (3-dots) -->
+    <ImageButton
+        android:id="@+id/btn_track_menu"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Track Options"
+        android:src="@drawable/more_vert_24px"
+        app:tint="#8b949e" />
 
-        <!-- Save Button (Initially GONE) -->
-        <ImageButton
-            android:id="@+id/button_save_edit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:contentDescription="Save Changes"
-            android:padding="8dp"
-            android:src="@drawable/save_24px"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:tint="@color/gmaGreenDarkMono"
-            tools:visibility="visible"/>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</androidx.cardview.widget.CardView>
+</RelativeLayout>

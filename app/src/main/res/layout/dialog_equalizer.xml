@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#151b26"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Title Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sound Effects &amp; Equalizer"
+            android:textColor="#ffffff"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- Master DSP Switch -->
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_eq_enable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Enable Audio Effects"
+            android:textColor="#8b949e"
+            android:textSize="14sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="10dp"
+            android:background="#30363d" />
+
+        <!-- Presets Selection Spinner -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Equalizer Preset"
+            android:textColor="#8b949e"
+            android:textSize="13sp" />
+
+        <Spinner
+            android:id="@+id/spinner_eq_presets"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="4dp"
+            android:background="#1e2638" />
+
+        <!-- Bass Boost Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Bass Boost"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/text_bass_strength"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:text="0%"
+                    android:textColor="#2ea043"
+                    android:textSize="13sp" />
+            </RelativeLayout>
+
+            <SeekBar
+                android:id="@+id/seek_bass_boost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:max="1000"
+                android:progress="0" />
+        </LinearLayout>
+
+        <!-- Dynamic Frequency Sliders Container -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="Frequency Bands"
+            android:textColor="#ffffff"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/container_eq_sliders"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="vertical" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="12dp"
+            android:background="#30363d" />
+
+        <!-- A-B Looper Controls Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="A-B Repeat Looper"
+            android:textColor="#ffffff"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:weightSum="3">
+
+            <Button
+                android:id="@+id/btn_set_point_a"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:backgroundTint="#1e2638"
+                android:text="Set A"
+                android:textColor="#ffffff"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btn_set_point_b"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="2dp"
+                android:layout_weight="1"
+                android:backgroundTint="#1e2638"
+                android:text="Set B"
+                android:textColor="#ffffff"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btn_clear_ab_loop"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:backgroundTint="#2d1c22"
+                android:text="Clear"
+                android:textColor="#f85149"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/text_loop_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:text="Loop: Disabled"
+            android:textColor="#8b949e"
+            android:textSize="12sp" />
+
+        <!-- Audio Trimmer Quick Action Button -->
+        <Button
+            android:id="@+id/btn_open_trimmer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:backgroundTint="#2ea043"
+            android:text="Trim Current Audio Track"
+            android:textColor="#ffffff"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+</ScrollView>

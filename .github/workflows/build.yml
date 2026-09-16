@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Native Musix APK
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Set up Java 17
@@ -20,14 +20,14 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Make Gradlew Executable
+      - name: Grant Execute Permission to Gradlew
         run: chmod +x gradlew
 
-      - name: Build Debug APK
+      - name: Assemble Debug APK
         run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
 
-      - name: Upload Output APK
+      - name: Upload Output Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Musix-debug-apk
+          name: Musix-Native-Debug-APK
           path: app/build/outputs/apk/debug/*.apk

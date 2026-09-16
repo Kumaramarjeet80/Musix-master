@@ -1,73 +1,189 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:background="@android:color/black"
-    tools:context=".MusicActivity">
+    android:background="#0a0d14"
+    android:padding="20dp">
 
-    <!-- Track Title -->
-    <TextView
-        android:id="@+id/text_track_title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:paddingTop="8dp"
-        android:ellipsize="marquee"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:scrollHorizontally="true"
-        android:singleLine="true"
-        android:textAlignment="center"
-        android:textColor="@android:color/white"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/text_track_artist"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Track Title Goes Here" />
-
-    <!-- Artist and Album Info -->
-    <TextView
-        android:id="@+id/text_track_artist"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="32dp"
-        android:singleLine="true"
-        android:textAlignment="center"
-        android:textColor="#B3FFFFFF"
-        android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_track_title"
-        tools:text="Artist Name • Album Name" />
-
-    <androidx.media3.ui.PlayerView
-        android:id="@+id/player_view"
+    <!-- Top Action Bar Header -->
+    <RelativeLayout
+        android:id="@+id/layout_top_bar"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@android:color/transparent"
-        app:controller_layout_id="@layout/custom_player_controls"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_track_artist"
-        app:auto_show="true"
-        app:hide_on_touch="true"
-        app:repeat_toggle_modes="all"
-        app:show_shuffle_button="true"
-        app:surface_type="none"
-        app:use_controller="true"
-        app:show_timeout="0"
-        app:play_icon="@drawable/ic_play_arrow_black"
-        app:pause_icon="@drawable/ic_pause_black"
-        />
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_alignParentStart="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:src="@drawable/arrow_back_24px"
+            app:tint="#ffffff" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Now Playing"
+            android:textColor="#8b949e"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <!-- Native Hardware Equalizer & Effects Trigger -->
+        <ImageButton
+            android:id="@+id/btn_open_equalizer"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_alignParentEnd="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Equalizer &amp; Effects"
+            android:src="@drawable/sliders_24px"
+            app:tint="#2ea043" />
+    </RelativeLayout>
+
+    <!-- Center Album Artwork -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_album_art"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:layout_above="@id/layout_meta_details"
+        android:layout_below="@id/layout_top_bar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginVertical="24dp"
+        app:cardBackgroundColor="#151b26"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="10dp">
+
+        <ImageView
+            android:id="@+id/image_album_art"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Album Art"
+            android:scaleType="centerCrop"
+            android:src="@drawable/default_album_art_144px" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- Song Metadata Details -->
+    <LinearLayout
+        android:id="@+id/layout_meta_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/layout_progress"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/text_song_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:gravity="center"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:text="No track playing"
+            android:textColor="#ffffff"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_song_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:singleLine="true"
+            android:text="Offline Audio"
+            android:textColor="#8b949e"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- Progress Scrubber Bar -->
+    <LinearLayout
+        android:id="@+id/layout_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/layout_player_controls"
+        android:layout_marginBottom="24dp"
+        android:orientation="vertical">
+
+        <SeekBar
+            android:id="@+id/seek_bar_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:progressDrawable="@drawable/line_drawable"
+            android:thumb="@drawable/thumb_drawable" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:paddingHorizontal="12dp">
+
+            <TextView
+                android:id="@+id/text_current_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:text="0:00"
+                android:textColor="#8b949e"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/text_total_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="0:00"
+                android:textColor="#8b949e"
+                android:textSize="12sp" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <!-- Bottom Media Playback Controls -->
+    <LinearLayout
+        android:id="@+id/layout_player_controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btn_previous"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="20dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Previous Track"
+            android:src="@drawable/skip_previous_24px"
+            app:tint="#ffffff" />
+
+        <ImageButton
+            android:id="@+id/btn_play_pause"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:background="@drawable/bg_circle_white"
+            android:backgroundTint="#2ea043"
+            android:contentDescription="Play or Pause"
+            android:padding="16dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/play_arrow_24px"
+            app:tint="#ffffff" />
+
+        <ImageButton
+            android:id="@+id/btn_next"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="20dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Next Track"
+            android:src="@drawable/skip_next_24px"
+            app:tint="#ffffff" />
+    </LinearLayout>
+
+</RelativeLayout>

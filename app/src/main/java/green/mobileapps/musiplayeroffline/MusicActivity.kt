@@ -1,321 +1,306 @@
 package green.mobileapps.musiplayeroffline
 
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
-import android.media.MediaMetadataRetriever // NEW
-import android.net.Uri
-import android.os.Build
+import android.content.ServiceConnection
+import android.graphics.Color
+import android.media.audiofx.Equalizer
 import android.os.Bundle
-import android.provider.OpenableColumns // NEW
-import android.util.Log
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.annotation.OptIn
+import android.os.IBinder
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope // NEW
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata // NEW
-import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
-import androidx.media3.ui.PlayerView
-import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.MoreExecutors
-import green.mobileapps.musiplayeroffline.R
-import kotlinx.coroutines.Dispatchers // NEW
-import kotlinx.coroutines.launch // NEW
-import kotlinx.coroutines.withContext // NEW
+import androidx.appcompat.widget.SwitchCompat
+import java.io.File
 
 class MusicActivity : AppCompatActivity() {
 
-    private val TAG = "MusicActivity"
-    private lateinit var playerView: PlayerView
-    private lateinit var controllerFuture: ListenableFuture<MediaController>
-    private var mediaController: MediaController? = null
+    private var musicService: MusicService? = null
+    private var isBound = false
 
-    // Store a pending external URI to play once the controller connects
-    private var pendingExternalUri: Uri? = null
+    // Player UI Views
+    private lateinit var textSongTitle: TextView
+    private lateinit var textSongArtist: TextView
+    private lateinit var btnPlayPause: ImageButton
+    private lateinit var btnNext: ImageButton
+    private lateinit var btnPrevious: ImageButton
+    private lateinit var btnOpenEqualizer: ImageButton
+    private lateinit var seekBarProgress: SeekBar
 
-    private val playerListener = object : Player.Listener {
-        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            super.onMediaItemTransition(mediaItem, reason)
-            updateMetadataUI(mediaItem)
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as MusicService.MusicBinder
+            musicService = binder.getService()
+            isBound = true
+            updatePlayerState()
         }
 
-        // NEW: specific override for repeat mode changes
-        override fun onRepeatModeChanged(repeatMode: Int) {
-            super.onRepeatModeChanged(repeatMode)
-            updateRepeatButton(repeatMode)
-        }
-
-        // NEW: Handle initial state when player attaches
-        override fun onEvents(player: Player, events: Player.Events) {
-            super.onEvents(player, events)
-            if (events.contains(Player.EVENT_REPEAT_MODE_CHANGED) ||
-                events.contains(Player.EVENT_PLAY_WHEN_READY_CHANGED)) {
-                updateRepeatButton(player.repeatMode)
-            }
+        override fun onServiceDisconnected(name: ComponentName?) {
+            musicService = null
+            isBound = false
         }
     }
 
-    private lateinit var textTitle: TextView
-    private lateinit var textArtist: TextView
-    private lateinit var imageAlbumArt: ImageView
-
-    private val EXTRA_AUDIO_FILE = "EXTRA_AUDIO_FILE"
-
-    @OptIn(UnstableApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.music_activity)
 
-        playerView = findViewById(R.id.player_view)
-        textTitle = findViewById(R.id.text_track_title)
-        textArtist = findViewById(R.id.text_track_artist)
+        initViews()
+        bindMusicService()
+    }
 
-        playerView.setShowFastForwardButton(true)
-        playerView.setShowRewindButton(true)
-        playerView.setShowNextButton(true)
-        playerView.setShowPreviousButton(true)
-        playerView.setShowShuffleButton(true)
+    private fun initViews() {
+        textSongTitle = findViewById(R.id.text_song_title)
+        textSongArtist = findViewById(R.id.text_song_artist)
+        btnPlayPause = findViewById(R.id.btn_play_pause)
+        btnNext = findViewById(R.id.btn_next)
+        btnPrevious = findViewById(R.id.btn_previous)
+        btnOpenEqualizer = findViewById(R.id.btn_open_equalizer)
+        seekBarProgress = findViewById(R.id.seek_bar_progress)
 
-        val btnRepeat = playerView.findViewById<ImageButton>(R.id.btn_custom_repeat)
-        btnRepeat.setOnClickListener {
-            mediaController?.let { player ->
-                val newMode = when (player.repeatMode) {
-                    Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
-                    Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
-                    Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_OFF
-                    else -> Player.REPEAT_MODE_OFF
+        btnPlayPause.setOnClickListener {
+            musicService?.let { service ->
+                val player = service.mediaPlayer
+                if (player != null && player.isPlaying) {
+                    service.pausePlayback()
+                    btnPlayPause.setImageResource(R.drawable.play_arrow_24px)
+                } else {
+                    service.resumePlayback()
+                    btnPlayPause.setImageResource(R.drawable.pause_24px)
                 }
-                player.repeatMode = newMode
-                // UI will be updated automatically via the playerListener below
             }
         }
 
-        checkForExternalIntent(intent)
-    }
+        btnNext.setOnClickListener {
+            musicService?.playNext()
+            updatePlayerState()
+        }
 
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        checkForExternalIntent(intent)
+        btnPrevious.setOnClickListener {
+            musicService?.playPrevious()
+            updatePlayerState()
+        }
 
-        if (mediaController != null && pendingExternalUri != null) {
-            playExternalUri(pendingExternalUri!!)
+        btnOpenEqualizer.setOnClickListener {
+            showEqualizerDialog()
         }
     }
 
-    private fun checkForExternalIntent(intent: Intent?) {
-        if (intent == null) return
+    private fun bindMusicService() {
+        val intent = Intent(this, MusicService::class.java)
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+    }
 
-        if (Intent.ACTION_VIEW == intent.action && intent.data != null) {
-            pendingExternalUri = intent.data
-        } else if (Intent.ACTION_SEND == intent.action && "audio/" in (intent.type ?: "")) {
-            pendingExternalUri = if (Build.VERSION.SDK_INT >= 33) {
-                intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+    private fun updatePlayerState() {
+        musicService?.let { service ->
+            textSongTitle.text = service.currentTrackTitle
+            textSongArtist.text = service.currentTrackArtist
+
+            val isPlaying = service.mediaPlayer?.isPlaying ?: false
+            btnPlayPause.setImageResource(
+                if (isPlaying) R.drawable.pause_24px else R.drawable.play_arrow_24px
+            )
+        }
+    }
+
+    private fun showEqualizerDialog() {
+        val service = musicService ?: return
+        val eq = service.equalizer
+        val bb = service.bassBoost
+
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_equalizer, null)
+        val switchEq = dialogView.findViewById<SwitchCompat>(R.id.switch_eq_enable)
+        val spinnerPresets = dialogView.findViewById<Spinner>(R.id.spinner_eq_presets)
+        val seekBass = dialogView.findViewById<SeekBar>(R.id.seek_bass_boost)
+        val textBassStrength = dialogView.findViewById<TextView>(R.id.text_bass_strength)
+        val containerSliders = dialogView.findViewById<LinearLayout>(R.id.container_eq_sliders)
+
+        val btnSetA = dialogView.findViewById<Button>(R.id.btn_set_point_a)
+        val btnSetB = dialogView.findViewById<Button>(R.id.btn_set_point_b)
+        val btnClearLoop = dialogView.findViewById<Button>(R.id.btn_clear_ab_loop)
+        val textLoopStatus = dialogView.findViewById<TextView>(R.id.text_loop_status)
+        val btnOpenTrimmer = dialogView.findViewById<Button>(R.id.btn_open_trimmer)
+
+        // Master Switch
+        switchEq.isChecked = eq?.enabled ?: false
+        switchEq.setOnCheckedChangeListener { _, isChecked ->
+            eq?.enabled = isChecked
+            bb?.enabled = isChecked
+        }
+
+        // Bass Boost
+        seekBass.max = 1000
+        seekBass.progress = bb?.roundedStrength?.toInt() ?: 0
+        textBassStrength.text = "${(seekBass.progress / 10)}%"
+        seekBass.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    service.setBassBoost(progress.toShort())
+                    textBassStrength.text = "${(progress / 10)}%"
+                }
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        // Equalizer Hardware Presets
+        if (eq != null) {
+            val numPresets = eq.numberOfPresets.toInt()
+            val presetNames = ArrayList<String>()
+            for (i in 0 until numPresets) {
+                presetNames.add(eq.getPresetName(i.toShort()))
+            }
+            presetNames.add("Custom")
+
+            val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, presetNames)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinnerPresets.adapter = adapter
+
+            val currentPreset = eq.currentPreset.toInt()
+            if (currentPreset in 0 until numPresets) {
+                spinnerPresets.setSelection(currentPreset)
             } else {
-                @Suppress("DEPRECATION")
-                intent.getParcelableExtra(Intent.EXTRA_STREAM) as? Uri
+                spinnerPresets.setSelection(numPresets)
             }
-        }
-    }
 
-    // --- NEW: Helper to extract ID3 tags or fallback to filename ---
-    private fun extractMediaMetadata(uri: Uri): MediaMetadata {
-        val retriever = MediaMetadataRetriever()
-        var title: String? = null
-        var artist: String? = null
-        var album: String? = null
+            // Frequency Sliders Generation
+            val numBands = eq.numberOfBands.toInt()
+            val minLevel = eq.bandLevelRange[0].toInt()
+            val maxLevel = eq.bandLevelRange[1].toInt()
 
-        try {
-            // Identify the context and URI to extracting metadata
-            retriever.setDataSource(this, uri)
-            title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
-            artist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
-            album = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to extract ID3 tags", e)
-        } finally {
-            try { retriever.release() } catch (_: Exception) {}
-        }
+            containerSliders.removeAllViews()
 
-        // Fallback 1: If title is missing, try to get filename from ContentResolver
-        if (title.isNullOrEmpty()) {
-            title = getFileNameFromUri(uri)
-        }
+            for (i in 0 until numBands) {
+                val band = i.toShort()
+                val centerFreqHz = eq.getCenterFreq(band) / 1000
 
-        // Fallback 2: If still empty
-        if (title.isNullOrEmpty()) {
-            title = "External Audio File"
-        }
+                val bandRow = LinearLayout(this).apply {
+                    orientation = LinearLayout.VERTICAL
+                    setPadding(0, 4, 0, 8)
+                }
 
-        return MediaMetadata.Builder()
-            .setTitle(title)
-            .setArtist(artist ?: "Unknown Artist")
-            .setAlbumTitle(album)
-            .build()
-    }
+                val label = TextView(this).apply {
+                    text = if (centerFreqHz >= 1000) "${centerFreqHz / 1000} kHz" else "$centerFreqHz Hz"
+                    setTextColor(Color.parseColor("#8b949e"))
+                    textSize = 12f
+                }
 
-    private fun getFileNameFromUri(uri: Uri): String? {
-        var result: String? = null
-        if (uri.scheme == "content") {
-            try {
-                contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                    if (cursor.moveToFirst()) {
-                        val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                        if (index != -1) {
-                            result = cursor.getString(index)
+                val bandSeekBar = SeekBar(this).apply {
+                    max = maxLevel - minLevel
+                    progress = (eq.getBandLevel(band) - minLevel)
+                    setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                        override fun onProgressChanged(seekBar: SeekBar?, prog: Int, fromUser: Boolean) {
+                            if (fromUser) {
+                                val newLevel = (prog + minLevel).toShort()
+                                service.setBandGain(band, newLevel)
+                                spinnerPresets.setSelection(numPresets) // Custom
+                            }
+                        }
+                        override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                        override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+                    })
+                }
+
+                bandRow.addView(label)
+                bandRow.addView(bandSeekBar)
+                containerSliders.addView(bandRow)
+            }
+
+            spinnerPresets.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
+                    if (pos < numPresets) {
+                        eq.usePreset(pos.toShort())
+                        for (i in 0 until numBands) {
+                            val band = i.toShort()
+                            val row = containerSliders.getChildAt(i) as? LinearLayout
+                            val sb = row?.getChildAt(1) as? SeekBar
+                            sb?.progress = eq.getBandLevel(band) - minLevel
                         }
                     }
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error resolving filename", e)
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
         }
-        if (result == null) {
-            result = uri.path
-            val cut = result?.lastIndexOf('/')
-            if (cut != null && cut != -1) {
-                result = result?.substring(cut + 1)
+
+        // A-B Looper Controls
+        fun refreshLoopStatus() {
+            val a = service.loopPointA
+            val b = service.loopPointB
+            textLoopStatus.text = when {
+                a != null && b != null -> "Looping: ${formatTime(a)} - ${formatTime(b)}"
+                a != null -> "Point A: ${formatTime(a)} | Set Point B"
+                else -> "Loop: Disabled"
             }
         }
-        return result
-    }
+        refreshLoopStatus()
 
-    // --- MODIFIED: playExternalUri to use extraction logic ---
-    private fun playExternalUri(uri: Uri) {
-        // Show temporary loading state
-        textTitle.text = "Loading Metadata..."
-        textArtist.text = ""
+        btnSetA.setOnClickListener {
+            val pos = service.mediaPlayer?.currentPosition?.toLong() ?: 0L
+            service.setPointA(pos)
+            refreshLoopStatus()
+        }
 
-        // Use LifecycleScope to do file reading in background (IO)
-        lifecycleScope.launch(Dispatchers.IO) {
-            val metadata = extractMediaMetadata(uri)
+        btnSetB.setOnClickListener {
+            val pos = service.mediaPlayer?.currentPosition?.toLong() ?: 0L
+            service.setPointB(pos)
+            refreshLoopStatus()
+        }
 
-            // Switch back to Main Thread to update Player and UI
-            withContext(Dispatchers.Main) {
-                Log.d(TAG, "Playing external URI with metadata: ${metadata.title}")
+        btnClearLoop.setOnClickListener {
+            service.clearLoop()
+            refreshLoopStatus()
+        }
 
-                // Build MediaItem explicitly with the metadata we found
-                val mediaItem = MediaItem.Builder()
-                    .setUri(uri)
-                    .setMediaMetadata(metadata)
-                    .build()
+        // Trimmer Execution Trigger
+        btnOpenTrimmer.setOnClickListener {
+            val path = service.currentTrackPath
+            if (path.isEmpty() || !File(path).exists()) {
+                Toast.makeText(this, "No active audio file available to trim", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-                mediaController?.let { controller ->
-                    controller.setMediaItem(mediaItem)
-                    controller.prepare()
-                    controller.play()
+            val curPos = service.mediaPlayer?.currentPosition?.toLong() ?: 0L
+            val startUs = curPos * 1000
+            val endUs = (curPos + 30000) * 1000 // 30-second default snippet
 
-                    pendingExternalUri = null
+            val outDir = getExternalFilesDir(null) ?: filesDir
+            val outFile = File(outDir, "Trimmed_${System.currentTimeMillis()}.m4a")
 
-                    // Manually update UI immediately so we don't have to wait for the player listener
-                    textTitle.text = metadata.title
-                    val artist = metadata.artist.toString()
-                    val album = metadata.albumTitle?.toString()
-                    val artistText = if (album.isNullOrBlank()) artist else "$artist • $album"
-                    textArtist.text = artistText
+            Toast.makeText(this, "Trimming audio track...", Toast.LENGTH_SHORT).show()
+
+            Thread {
+                val success = AudioTrimmer.trimAudio(path, outFile.absolutePath, startUs, endUs)
+                runOnUiThread {
+                    if (success) {
+                        Toast.makeText(this, "Clip saved: ${outFile.name}", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(this, "Failed to trim audio.", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            }
+            }.start()
         }
+
+        AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setPositiveButton("Done", null)
+            .show()
     }
-    // ---------------------------------------------------------
 
-    private fun updateMetadataUI(mediaItem: MediaItem?) {
-        val metadata = mediaItem?.mediaMetadata
-        if (metadata != null) {
-            val title = metadata.title?.toString() ?: "Unknown Title"
-            textTitle.text = title
+    private fun formatTime(millis: Long): String {
+        val totalSeconds = millis / 1000
+        val m = totalSeconds / 60
+        val s = totalSeconds % 60
+        return String.format("%d:%02d", m, s)
+    }
 
-            val artist = metadata.artist?.toString() ?: "Unknown Artist"
-            val album = metadata.albumTitle?.toString()
-            val artistText = if (album.isNullOrBlank()) artist else "$artist • $album"
-            textArtist.text = artistText
-        } else {
-            textTitle.text = "No Track Loaded"
-            textArtist.text = "Waiting for Media Service"
+    override fun onDestroy() {
+        super.onDestroy()
+        if (isBound) {
+            unbindService(serviceConnection)
+            isBound = false
         }
-    }
-
-    private fun updateRepeatButton(repeatMode: Int) {
-        val btnRepeat = playerView.findViewById<ImageButton>(R.id.btn_custom_repeat) ?: return
-
-        when (repeatMode) {
-            Player.REPEAT_MODE_OFF -> {
-                btnRepeat.setImageResource(R.drawable.repeat_24px)
-                btnRepeat.alpha = 0.3f // Dim the icon to show it's inactive
-            }
-            Player.REPEAT_MODE_ALL -> {
-                btnRepeat.setImageResource(R.drawable.repeat_24px)
-                btnRepeat.alpha = 1.0f // Fully opaque (White)
-            }
-            Player.REPEAT_MODE_ONE -> {
-                btnRepeat.setImageResource(R.drawable.ic_repeat_one_white) // Your custom icon
-                btnRepeat.alpha = 1.0f
-            }
-        }
-    }
-
-    private fun updateShuffleButton(isShuffleOn: Boolean) {
-        // Find the shuffle button inside the PlayerView layout
-        // Note: The ID comes from ExoPlayer's standard IDs or your custom layout
-        val btnShuffle = playerView.findViewById<ImageButton>(androidx.media3.ui.R.id.exo_shuffle)
-            ?: playerView.findViewById<ImageButton>(androidx.media3.ui.R.id.exo_shuffle)
-            ?: return
-
-        // Set alpha to indicate state (Dim = Off, Bright = On)
-        btnShuffle.alpha = if (isShuffleOn) 1.0f else 0.3f
-
-        // Optionally force the icon if it changes
-        // btnShuffle.setImageResource(R.drawable.shuffle_24px)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        Log.d(TAG, "onStart: Creating MediaController")
-
-        val sessionToken = SessionToken(
-            this,
-            ComponentName(this, MusicService::class.java)
-        )
-
-        controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
-
-        controllerFuture.addListener({
-            try {
-                mediaController = controllerFuture.get()
-                playerView.player = mediaController
-                mediaController?.addListener(playerListener)
-                Log.d(TAG, "MediaController connected.")
-
-                updateRepeatButton(mediaController?.repeatMode ?: Player.REPEAT_MODE_OFF)
-                updateShuffleButton(mediaController?.shuffleModeEnabled ?: false)
-
-                if (pendingExternalUri != null) {
-                    playExternalUri(pendingExternalUri!!)
-                } else {
-                    updateMetadataUI(mediaController?.currentMediaItem)
-                }
-
-            } catch (e: Exception) {
-                Log.e(TAG, "Error connecting MediaController", e)
-                textTitle.text = "Connection Failed"
-                textArtist.text = "Check if MusicService is running"
-            }
-        }, MoreExecutors.directExecutor())
-    }
-
-    override fun onStop() {
-        super.onStop()
-        if (controllerFuture.isDone) {
-            mediaController?.removeListener(playerListener)
-            playerView.player = null
-            MediaController.releaseFuture(controllerFuture)
-            Log.d(TAG, "MediaController listener removed and controller released.")
-        }
-        mediaController = null
     }
 }

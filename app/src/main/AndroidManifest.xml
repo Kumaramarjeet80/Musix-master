@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    package="green.mobileapps.musiplayeroffline">
 
+    <!-- Audio Hardware & Background Playback Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Storage Reading Permissions -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
 
     <application
         android:allowBackup="true"
@@ -17,73 +27,36 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_musix_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Material3.Dark.NoActionBar">
+        android:theme="@style/Theme.Musix">
 
+        <!-- Main Launcher Activity -->
         <activity
             android:name=".MainActivity"
-            android:windowSoftInputMode="adjustPan"
             android:exported="true"
-            android:theme="@style/AppTheme.Launcher">
+            android:theme="@style/Theme.Musix">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="text/plain"/>
-            </intent-filter>
         </activity>
 
+        <!-- Player Activity -->
         <activity
             android:name=".MusicActivity"
-            android:exported="true"
+            android:exported="false"
             android:launchMode="singleTop"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
+            android:theme="@style/Theme.Musix" />
 
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="content" />
-                <data android:scheme="file" />
-                <data android:mimeType="audio/*" />
-                <data android:mimeType="application/ogg" />
-            </intent-filter>
-
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="audio/*" />
-            </intent-filter>
-        </activity>
-
+        <!-- Foreground Audio Service -->
         <service
             android:name=".MusicService"
             android:enabled="true"
-            android:exported="true"
-            android:label="Music Service"
-            android:permission="internet"
-            tools:targetApi="34"
-            android:foregroundServiceType="mediaPlayback"
-            android:attributionTags="MusicPlayer">
-
-            <intent-filter>
-                <action android:name="androidx.media3.session.MediaSessionService" />
-            </intent-filter>
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
-        </provider>
 
     </application>
 
