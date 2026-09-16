@@ -1513,8 +1513,17 @@ audio.addEventListener('play', () => {
   syncGlobalEqualizerBars(true);
   if (currentPlayingTrack) updateActiveTrackClasses(currentPlayingTrack.name, true);
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
-});
 
+  // --- ADD THIS HINT BLOCK HERE ---
+  // Tells Android native layer that a song has started playing
+  if (window.AndroidBridge && currentPlayingTrack) {
+    window.AndroidBridge.onSongPlay(
+      currentPlayingTrack.name,
+      currentPlaylist.localName || currentPlaylist.name || "Offline Library"
+    );
+  }
+  // --------------------------------
+});
 audio.addEventListener('pause', () => {
   releaseWakeLock();
   syncButtons(false);
@@ -1524,6 +1533,13 @@ audio.addEventListener('pause', () => {
   if (!isManualPause && currentPlayingTrack) {
     wasPlayingBeforeInterruption = true;
   }
+
+  // --- ADD THIS HINT BLOCK HERE ---
+  // Tells Android native layer that playback has paused
+  if (window.AndroidBridge) {
+    window.AndroidBridge.onSongPause();
+  }
+  // --------------------------------
 });
 
 // Resuscitate Web Audio pipeline immediately on app visibility return
